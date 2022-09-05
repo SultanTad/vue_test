@@ -4,6 +4,9 @@
     <div>
         <input type="search" placeholder="поиск" v-model="filter">
     </div>
+    <SelectSort 
+      @sort="sortProducts"
+    />
     <div class="main-products">
       <div class="layout_product">
         <AddContent 
@@ -14,7 +17,7 @@
       </div>
       <div class="add_products">
         <ItemProduct   
-        v-for="product of filteredProducts"
+        v-for="product of sortedProducts  "
         v-bind:product="product"
         @delete-product="onDelete"
         @edit-product="onEdit"
@@ -27,13 +30,15 @@
 <script>
 import AddContent from '@/components/AddContent';
 import ItemProduct from '@/components/ItemProduct';
+import SelectSort from './components/SelectSort.vue';
 export default {
   name: 'App',
   data() {
     return {
       products: [],
       productToEdit: null,
-      filter: ""
+      filter: "",
+      sort: 'default'
     };
   },
   computed: {
@@ -41,6 +46,44 @@ export default {
             return this.products.filter((product) =>{
                 return product.title.startsWith(this.filter);
             });
+        },
+        sortedProducts: function() {
+          if (this.sort === 'default') {
+            return this.filteredProducts;
+          }
+          if (this.sort === 'priceUp') {
+            return [...this.filteredProducts].sort((product1, product2) => {
+              if (product1.price > product2.price) {
+                return 1
+              }
+              if (product1.price < product2.price) {
+                return -1
+              }
+              return 0
+            })
+          }
+          if (this.sort === 'priceDown') {
+            return [...this.filteredProducts].sort((product1, product2) => {
+              if (product1.price < product2.price) {
+                return 1
+              }
+              if (product1.price > product2.price) {
+                return -1
+              }
+              return 0
+            })
+          }
+          if (this.sort === 'title') {
+            return [...this.filteredProducts].sort((product1, product2) => {
+              if (product1.title > product2.title) {
+                return 1
+              }
+              if (product1.title < product2.title) {
+                return -1
+              }
+              return 0
+            })
+          }
         }
     },
     async mounted() {
@@ -69,11 +112,15 @@ export default {
         this.products.splice(index, 1, product);
       }
       this.productToEdit = null;
+    },
+    sortProducts(value) {
+      this.sort = value
     }
   },
   components: {
     AddContent,
-    ItemProduct
+    ItemProduct,
+    SelectSort
 }
 }
 </script>
